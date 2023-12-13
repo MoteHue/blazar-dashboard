@@ -19,6 +19,8 @@ from pytz import UTC
 from blazar_dashboard import conf
 from horizon import exceptions
 from horizon.utils.memoized import memoized
+from keystoneauth1 import session
+from keystoneauth1.identity import v3
 from openstack_dashboard.api import base
 
 from blazarclient import client as blazar_client
@@ -74,11 +76,16 @@ def blazarclient(request):
         LOG.debug('No Reservation service is configured.')
         return None
 
-    LOG.debug('blazarclient connection created using the token "%s" and url'
-              '"%s"' % (request.user.token.id, api_url))
-    return blazar_client.Client(
-        blazar_url=api_url,
-        auth_token=request.user.token.id)
+    auth = v3.Token(auth_url="https://192.168.37.2:5000", token=request.user.token.id)
+    sess = session.Session(auth=auth, verify='/etc/ssl/certs/ca-certificates.crt')
+
+    return blazar_client.Client(session=sess)
+
+    # LOG.debug('blazarclient connection created using the token "%s" and url'
+    #           '"%s"' % (request.user.token.id, api_url))
+    # return blazar_client.Client(
+    #     blazar_url=api_url,
+    #     auth_token=request.user.token.id)
 
 
 def lease_list(request):
