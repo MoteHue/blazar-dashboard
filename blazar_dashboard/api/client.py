@@ -76,8 +76,11 @@ def blazarclient(request):
         LOG.debug('No Reservation service is configured.')
         return None
 
-    auth = v3.Token(auth_url="https://192.168.37.2:5000", token=request.user.token.id)
-    sess = session.Session(auth=auth, verify='/etc/ssl/certs/ca-certificates.crt')
+    auth_url = "https://192.168.33.2:5000"
+    project_id = request.user.project_id
+    domain_id = request.session.get('domain_context')
+    auth = v3.Token(auth_url, request.user.token.id, project_id=project_id, project_domain_id=domain_id)
+    sess = session.Session(auth=auth, verify='/etc/pki/tls/certs/ca-bundle.crt')
 
     return blazar_client.Client(session=sess)
 
